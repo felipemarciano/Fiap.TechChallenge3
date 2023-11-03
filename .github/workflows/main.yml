@@ -10,16 +10,22 @@ env:
   API_SERVICE: api
   RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
 jobs:
-  tests:
+  unit_tests:
     name: Unit Testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: dotnet test
+      - run: dotnet test UnitTests
+  integration_tests:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: dotnet test IntegrationTests
       
   build_and_push:
-    if: always()
-    needs: [tests]
+    if: success()
+    needs: [unit_tests, integration_tests]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
