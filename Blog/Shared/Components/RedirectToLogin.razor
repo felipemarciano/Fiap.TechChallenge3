@@ -1,0 +1,16 @@
+﻿@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception)
+        {
+
+        }
+    }
+}

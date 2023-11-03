@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Blog.Data
+@inject NavigationManager Navigation
+@inject ProfileService ProfileService
+@inject GlobalState GlobalState
+
+<AuthorizeView>
+    <Authorized>
+        <MudPaper Class="d-flex flex-column flex-grow-1 align-center w-100 py-4" Elevation="0">
+            <MudButton Variant="Variant.Text">
+                @if (string.IsNullOrWhiteSpace(GlobalState.PictureUri))
+                {
+                    <MudAvatar Size="Size.Large" Color="Color.Default">
+                        <MudIcon Size="Size.Large" Icon="@Icons.Material.Filled.SupervisedUserCircle" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <MudAvatar Size="Size.Large">
+                        <MudImage Src="@GlobalState.PictureUri"></MudImage>
+                    </MudAvatar>
+                }
+            </MudButton>
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <MudPaper Class="d-flex flex-column flex-grow-1 align-center w-100 py-4" Elevation="0">
+            <MudAvatar Size="Size.Medium">
+                <MudImage Src="images/logo-mini.png"></MudImage>
+            </MudAvatar>
+        </MudPaper>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    private string? userName;
+    ProfileModel _model = new ProfileModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _model = await ProfileService.Get() ?? new();
+
+        GlobalState.PictureUri = _model.PictureUri ?? "";
+    }
+}

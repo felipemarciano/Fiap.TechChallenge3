@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+
+<div>
+    <AuthorizeView>
+        <Authorized>
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                <MudMenuItem Icon="@Icons.Material.Filled.SupervisedUserCircle" @onclick="BeginProfile">Profile</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout" @onclick="BeginLogOut">Logout</MudMenuItem>
+            </MudMenu>
+        </Authorized>
+        <NotAuthorized>
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+                <MudMenuItem Icon="@Icons.Material.Filled.Login" @onclick="BeginLogin">Login</MudMenuItem>
+            </MudMenu>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    private void BeginLogin()
+    {
+        Navigation.NavigateTo("login");
+    }
+
+    private void BeginProfile()
+    {
+        Navigation.NavigateTo("profile");
+    }
+
+    private void BeginLogOut()
+    {
+        Navigation.NavigateTo("/logout");
+    }
+}

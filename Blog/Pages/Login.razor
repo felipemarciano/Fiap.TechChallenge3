@@ -1,0 +1,92 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations;
+@inject AuthenticationService AuthenticationService
+@inject CustomAuthenticationStateProvider CustomAuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Login</PageTitle>
+
+
+<MudContainer Class="mt-4" MaxWidth="MaxWidth.Medium">
+    <MudItem xs="12">
+        <EditForm EditContext="_editContext" OnValidSubmit="@OnValidSubmit">
+            <MudCard>
+                <MudCardHeader><MudText Typo="Typo.h4">Sign in </MudText></MudCardHeader>
+                <MudCardContent>
+                    <DataAnnotationsValidator />
+                    <MudTextField Label="Email" Class="mt-3"
+                    @bind-Value="_model.Email" For="@(() => _model.Email)" />
+                    <MudTextField Label="Password" Class="mt-3"
+                    @bind-Value="_model.Password" For="@(() => _model.Password)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudLink Href="/register" Underline="Underline.Always">Register</MudLink>
+                    <MudButton ButtonType="ButtonType.Submit" Disabled="_isTaskRunning" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Login</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </MudItem>
+</MudContainer>
+
+
+@code {
+    RegisterAccountForm _model = new RegisterAccountForm();
+    private ValidationMessageStore? _messageStore;
+    private EditContext? _editContext;
+    private bool _isTaskRunning = false;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = default!;
+
+        [Required]
+        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        public string Password { get; set; } = default!;
+
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_model);
+        _messageStore = new(_editContext);
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        try
+        {
+            _isTaskRunning = true;
+
+            var jwtToken = await AuthenticationService.AuthenticateAsync(_model.Email, _model.Password);
+
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                CustomAuthenticationStateProvider.SetToken(jwtToken);
+
+                await JSRuntime.InvokeVoidAsync("cookieHelper.setCookie", "authToken", jwtToken, 1);
+
+                NavigationManager.NavigateTo("/", true);
+            }
+            else
+            {
+                Console.WriteLine("Failed without login. Username or password is invalid.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _messageStore?.Add(() => _model.Email, ex.Message);
+
+            _editContext?.NotifyValidationStateChanged();
+            _isTaskRunning = false;
+        }
+        finally
+        {
+            _isTaskRunning = false;
+            StateHasChanged();
+        }
+    }
+}
+

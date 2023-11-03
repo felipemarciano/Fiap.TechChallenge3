@@ -1,0 +1,94 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations;
+@inject AuthenticationService AuthenticationService
+@inject CustomAuthenticationStateProvider CustomAuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Login</PageTitle>
+
+<MudContainer Class="mt-4" MaxWidth="MaxWidth.Medium">
+    <MudItem xs="12">
+        <EditForm EditContext="_editContext" OnValidSubmit="@OnValidSubmit">
+            <MudCard>
+                <MudCardHeader><MudText Typo="Typo.h4">Register</MudText></MudCardHeader>
+                <MudCardContent>
+                    <DataAnnotationsValidator />
+                    <br />
+                    <MudTextField Label="Email" Class="mt-3"
+                    @bind-Value="_model.Email" For="@(() => _model.Email)" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                    @bind-Value="_model.Password" For="@(() => _model.Password)" InputType="InputType.Password" />
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                    @bind-Value="_model.ConfirmPassword" For="@(() => _model.ConfirmPassword)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="_isTaskRunning" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </MudItem>
+</MudContainer>
+
+@code {
+    RegisterAccountForm _model = new RegisterAccountForm();
+    private ValidationMessageStore? _messageStore;
+    private EditContext? _editContext;
+    private bool _isTaskRunning = false;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string? Email { get; set; }
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string? Password { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string? ConfirmPassword { get; set; }
+
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_model);
+        _messageStore = new(_editContext);
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        try
+        {
+            _isTaskRunning = true;
+
+            var success = await AuthenticationService.RegisterAsync(_model.Email ?? "", _model.Password ?? "");
+
+            if (success)
+            {
+                NavigationManager.NavigateTo("/Login", true);
+            }
+            else
+            {
+                _messageStore?.Add(() => _model.Email, "Failed to register user");
+            }
+        }
+        catch (Exception ex)
+        {
+            _messageStore?.Add(() => _model.Email, ex.Message);
+
+            _editContext?.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _isTaskRunning = false;
+        }
+    }
+}
+

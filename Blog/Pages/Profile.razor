@@ -1,0 +1,178 @@
+﻿@page "/profile/{_showLeaveAlert:bool?}"
+@using Blog.Data
+@using System.ComponentModel.DataAnnotations;
+@inject ProfileService ProfileService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject BlobStorageService BlobStorageService
+@inject GlobalState GlobalState
+
+@attribute [Authorize]
+
+<PageTitle>Home</PageTitle>
+
+<MudContainer Class="mt-4" MaxWidth="MaxWidth.Medium">
+
+    <MudItem xs="12">
+        <EditForm EditContext="_editContext" OnValidSubmit="@OnValidSubmit">
+            <MudCard>
+                <MudCardHeader><MudText Typo="Typo.h4">Profile</MudText></MudCardHeader>
+                <MudCardContent>
+                    @if (_showLeaveAlert)
+                    {
+                        <MudPaper Class="d-flex justify-center flex-grow-1 gap-4 py-2" Elevation="0">
+                            <div></div>
+                            <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">The profile was changed successfully!</MudAlert>
+                            <div></div>
+                        </MudPaper>
+                    }
+                    <DataAnnotationsValidator />
+                    <MudPaper Class="d-flex flex-column flex-grow-1 align-center w-100 py-4" Elevation="0">
+
+                        @if (string.IsNullOrWhiteSpace(_model.PictureUri))
+                        {
+                            <MudAvatar Size="Size.Large" Color="Color.Default">
+                                <MudIcon Size="Size.Large" Icon="@Icons.Material.Filled.SupervisedUserCircle" />
+                            </MudAvatar>
+                        }
+                        else
+                        {
+                            <MudAvatar Size="Size.Large">
+                                <MudImage Src="@_model.PictureUri"></MudImage>
+                            </MudAvatar>
+                        }
+                        <br />
+                        <br />
+                        <InputFile OnChange="UploadFile">
+                        </InputFile>
+                    </MudPaper>
+                    <br />
+                    <MudTextField Label="User Name" Class="mt-3"
+                    @bind-Value="_model.UserName" For="@(() => _model.UserName)" />
+                    <MudTextField Label="Biography" Class="mt-3"
+                    @bind-Value="_model.Biography" For="@(() => _model.Biography)" />
+                    <MudSelect @bind-Value="_model.Gender" Label="Gender" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@("Male")" />
+                        <MudSelectItem Value="@("Female")" />
+                        <MudSelectItem Value="@("Uninformed")" />
+                    </MudSelect>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="_isTaskRunning" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </MudItem>
+</MudContainer>
+
+@code {
+    ProfileModelForm _model = new ProfileModelForm();
+    private ValidationMessageStore? _messageStore;
+    private EditContext? _editContext;
+    private bool _isTaskRunning = false;
+
+    [Parameter]
+    public bool _showLeaveAlert { get; set; } = false;
+
+    public class ProfileModelForm
+    {
+        public Guid Id { get; set; }
+
+        [Required]
+        public string? UserName { get; set; }
+
+        [Required]
+        public string? Biography { get; set; }
+
+        [Required]
+        public string? Gender { get; set; }
+
+        public string? PictureUri { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new(_model);
+        _messageStore = new(_editContext);
+
+        var profileModel = await ProfileService.Get();
+
+        if (profileModel != null)
+        {
+            _model.Id = profileModel.Id;
+            _model.UserName = profileModel.UserName;
+            _model.Gender = profileModel.Gender;
+            _model.Biography = profileModel.Biography;
+            _model.PictureUri = profileModel.PictureUri;
+        }
+    }
+
+    private void CloseMe(bool value)
+    {
+        if (value)
+        {
+            _showLeaveAlert = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            _isTaskRunning = true;
+
+            var file = e.File;
+            if (file != null)
+            {
+                var pictureUri = await BlobStorageService.UploadFileToBlobAsync(file);
+
+                _model.PictureUri = pictureUri;
+            }
+        }
+        catch (Exception ex)
+        {
+            _messageStore?.Add(() => _model.UserName, ex.Message);
+
+            _editContext?.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _isTaskRunning = false;
+        }
+    }
+
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        try
+        {
+            _isTaskRunning = true;
+
+            var success = await ProfileService.CreateUpdatePost(_model.UserName, _model.Biography, _model.PictureUri, _model.Gender);
+
+            if (success)
+            {
+                GlobalState.PictureUri = _model.PictureUri;
+
+                NavigationManager.NavigateTo("/profile/true", true);
+            }
+            else
+            {
+                _messageStore?.Add(() => _model.UserName, "Failed to change profile");
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            _messageStore?.Add(() => _model.UserName, ex.Message);
+
+            _editContext?.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _isTaskRunning = false;
+        }
+    }
+}

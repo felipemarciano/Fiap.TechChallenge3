@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider @ref="@_mudThemeProvider" Theme="MyCustomTheme" />
+<MudDialogProvider MaxWidth="MaxWidth.Medium" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudLink Href="/" Class="pt-2">
+            <MudImage Src="images/logo.png" Style="max-width: 250px; height: auto;" Alt="Logo" Fluid="true" />
+        </MudLink>
+        <MudSpacer />
+        <NavMenu></NavMenu>
+    </MudAppBar>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private MudThemeProvider? _mudThemeProvider;
+
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            Palette = new PaletteLight()
+            {
+                AppbarBackground = Colors.Grey.Lighten5,
+                AppbarText = Colors.Grey.Darken3
+            },
+        };
+}
