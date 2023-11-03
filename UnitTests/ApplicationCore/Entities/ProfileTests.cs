@@ -39,7 +39,7 @@ namespace UnitTests.ApplicationCore.Entities
             var profile = new Profile(Guid.NewGuid(), "test", "test", "test", EGender.Uninformed);
 
             // Assert
-            Assert.Equal(profile.ApplicationUserId, profile.ApplicationUserId);
+            Assert.Equal(profile.ApplicationUserId, profile.Id );
         }
     }
 }
