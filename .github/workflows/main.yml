@@ -10,13 +10,21 @@ env:
   API_SERVICE: api
   RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
 jobs:
-  build_and_push:
+  tests:
+    name: Unit Testing
     runs-on: ubuntu-latest
-
+    steps:
+      - uses: actions/checkout@v2
+      - run: dotnet test
+      
+  build_and_push:
+    if: always()
+    needs: [tests]
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+      
     - name: Set property string value in a json file
       uses: benday-inc/set-property-value-in-appsettings@v1.4
       with:
