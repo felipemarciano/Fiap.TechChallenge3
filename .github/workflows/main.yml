@@ -18,6 +18,7 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Tests
+    - uses: actions/checkout@v2
     - run: dotnet test
 
     - name: Set property string value in a json file
