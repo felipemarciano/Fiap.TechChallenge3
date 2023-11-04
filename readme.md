@@ -1,6 +1,22 @@
-# DocumentaÁ„o dos Componentes Azure para a AplicaÁ„o
+# Video demonstra√ß√£o Unit Test e Integration Test
 
-Este documento descreve os componentes Azure necess·rios para a aplicaÁ„o, explicando sua finalidade e como interagem entre si com base nas informaÁıes atualizadas sobre restriÁıes de acesso.
+
+
+https://github.com/felipemarciano/Fiap.TechChallenge3/assets/4870706/80076f85-a981-4497-8578-5348a0d7a283
+
+
+# Video demonstra√ß√£o Github Action e Azure
+
+
+
+https://github.com/felipemarciano/Fiap.TechChallenge3/assets/4870706/9e9a11cb-289f-4886-924f-a9bcbe1c520f
+
+
+
+
+# Documenta√ß√£o dos Componentes Azure para a Aplica√ß√£o
+
+Este documento descreve os componentes Azure necess√°rios para a aplica√ß√£o, explicando sua finalidade e como interagem entre si com base nas informa√ß√µes atualizadas sobre restri√ß√µes de acesso.
 
 ## 1. **Azure Database para PostgreSQL**
 
@@ -22,30 +38,30 @@ Azure Application Insights monitoramento.
 
 Azure WebApp Service com Docker para a API.
 
-## **InteraÁ„o Entre Componentes**:
-- O **serviÁo de API** interage com o **PostgreSQL Database** para recuperar e armazenar dados.
-- **Application Insights** coleta e analisa dados de telemetria de ambos os serviÁos **API** e **Blog** para fornecer insights sobre o desempenho e uso da aplicaÁ„o.
-- A **Storage Account** È acessada pelo **serviÁo de Blog** para recuperar e armazenar dados n„o estruturados ou arquivos.
-- Ambos os **WebApp Services** (API e Blog) podem ser configurados para enviar logs e mÈtricas para **Application Insights** para monitoramento e an·lise centralizados.
+## **Intera√ß√£o Entre Componentes**:
+- O **servi√ßo de API** interage com o **PostgreSQL Database** para recuperar e armazenar dados.
+- **Application Insights** coleta e analisa dados de telemetria de ambos os servi√ßos **API** e **Blog** para fornecer insights sobre o desempenho e uso da aplica√ß√£o.
+- A **Storage Account** √© acessada pelo **servi√ßo de Blog** para recuperar e armazenar dados n√£o estruturados ou arquivos.
+- Ambos os **WebApp Services** (API e Blog) podem ser configurados para enviar logs e m√©tricas para **Application Insights** para monitoramento e an√°lise centralizados.
 
 # GitHub Action: Build, Test, and Deploy to Azure
 
 ## Environment Variables
 
 - `REGISTRY_NAME`: Nome do Azure Container Registry.
-- `API_SERVICE`: Endpoint do serviÁo para a API.
+- `API_SERVICE`: Endpoint do servi√ßo para a API.
 - `RESOURCE_GROUP`: Nome do Grupo de Recursos do Azure.
 
 ## Secrets
 
-- `StorageConnectionString`: String de conex„o para o Azure Blob Storage.
-- `CONNECTION_STRING`: String de conex„o para o banco de dados usado na API.
-- `BLOG_CONNECTION_STRING`: String de conex„o para o banco de dados usado no Blog.
+- `StorageConnectionString`: String de conex√£o para o Azure Blob Storage.
+- `CONNECTION_STRING`: String de conex√£o para o banco de dados usado na API.
+- `BLOG_CONNECTION_STRING`: String de conex√£o para o banco de dados usado no Blog.
 - `AZURE_CREDENTIALS`: Credenciais para login no Azure.
-- `ACR_USERNAME`: Nome de usu·rio para o Azure Container Registry.
+- `ACR_USERNAME`: Nome de usu√°rio para o Azure Container Registry.
 - `ACR_PASSWORD`: Senha para o Azure Container Registry.
-- `AZURE_WEBAPP_PUBLISH_PROFILE_API`: Perfil de publicaÁ„o para o Azure Web App para a API.
-- `AZURE_WEBAPP_PUBLISH_PROFILE_BLOG`: Perfil de publicaÁ„o para o Azure Web App para o Blog.
+- `AZURE_WEBAPP_PUBLISH_PROFILE_API`: Perfil de publica√ß√£o para o Azure Web App para a API.
+- `AZURE_WEBAPP_PUBLISH_PROFILE_BLOG`: Perfil de publica√ß√£o para o Azure Web App para o Blog.
 
 ## Jobs
 
@@ -53,30 +69,30 @@ Azure WebApp Service com Docker para a API.
 
 - **OS**: Ubuntu-latest
 - **Passos**:
-  - Checkout do cÛdigo do repositÛrio.
-  - Executar testes unit·rios usando o comando dotnet.
+  - Checkout do c√≥digo do reposit√≥rio.
+  - Executar testes unit√°rios usando o comando dotnet.
 
 ### 2. Integration Testing
 
 - **OS**: Ubuntu-latest
 - **Passos**:
-  - Checkout do cÛdigo do repositÛrio.
-  - Executar testes de integraÁ„o usando o comando dotnet.
+  - Checkout do c√≥digo do reposit√≥rio.
+  - Executar testes de integra√ß√£o usando o comando dotnet.
 
 ### 3. Build and Push
 
-- **CondiÁ„o**: Sucesso dos jobs anteriores.
+- **Condi√ß√£o**: Sucesso dos jobs anteriores.
 - **Depende De**: unit_tests, integration_tests
 - **OS**: Ubuntu-latest
 - **Passos**:
-  - Checkout do cÛdigo do repositÛrio.
-  - Definir v·rios valores de propriedades nos arquivos appsettings.json.
+  - Checkout do c√≥digo do reposit√≥rio.
+  - Definir v√°rios valores de propriedades nos arquivos appsettings.json.
   - Login no Azure e no Azure Container Registry.
   - Construir e enviar imagens Docker para a API e Blog para o Azure Container Registry.
 
 ### 4. Publish WebApp API
 
-- **CondiÁ„o**: Sucesso dos jobs anteriores.
+- **Condi√ß√£o**: Sucesso dos jobs anteriores.
 - **Depende De**: build_and_push
 - **OS**: Ubuntu-latest
 - **Passos**:
@@ -84,14 +100,14 @@ Azure WebApp Service com Docker para a API.
 
 ### 5. Publish WebApp Blog
 
-- **CondiÁ„o**: Sucesso dos jobs anteriores.
+- **Condi√ß√£o**: Sucesso dos jobs anteriores.
 - **Depende De**: build_and_push
 - **OS**: Ubuntu-latest
 - **Passos**:
   - Implementar a imagem Docker do Blog no Azure WebApp.
 
 
-# ReferÍncias
+# Refer√™ncias
 
 - https://learn.microsoft.com/en-us/cli/azure/
 - https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md
