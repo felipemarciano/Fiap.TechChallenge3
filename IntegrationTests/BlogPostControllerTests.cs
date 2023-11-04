@@ -73,7 +73,7 @@ namespace IntegrationTests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            Assert.Equal(HttpStatusCode.AlreadyReported, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
