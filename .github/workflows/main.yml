@@ -6,8 +6,9 @@ on:
       - master 
 env:
   REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
-  WEB_SERVICE: blog
-  API_SERVICE: api
+  API_SERVICE: ${{ vars.API_SERVICE }}
+  DOCKER_IMAGEM_API: api
+  DOCKER_IMAGEM_BLOG: blog
   RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
 jobs:
   unit_tests:
@@ -38,7 +39,7 @@ jobs:
         pathToSettingsFile: '${{ github.workspace }}/Blog/appsettings.json'
         keyname1: JwtSettings
         keyname2: Api
-        valueToSet: ${{ env.API_SERVICE }}-fiap.eastus2.azurecontainer.io
+        valueToSet: ${{ env.API_SERVICE }}
 
     - name: Set property string value in a json file
       uses: benday-inc/set-property-value-in-appsettings@v1.4
@@ -77,14 +78,19 @@ jobs:
 
     - name: Build and push web service
       run: |
-        docker build -t ${{ env.REGISTRY_NAME }}/${{ env.WEB_SERVICE }}:${{ github.sha }} --file Dockerfile.blog .
-        docker push ${{ env.REGISTRY_NAME }}/${{ env.WEB_SERVICE }}:${{ github.sha }}
+        docker build -t ${{ env.REGISTRY_NAME }}/${{ env.DOCKER_IMAGEM_BLOG }}:${{ github.sha }} --file Dockerfile.blog .
+        docker push ${{ env.REGISTRY_NAME }}/${{ env.DOCKER_IMAGEM_BLOG }}:${{ github.sha }}
 
     - name: Build and push api service
       run: |
-        docker build -t ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }} --file Dockerfile.api .
-        docker push ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }}
-
+        docker build -t ${{ env.REGISTRY_NAME }}/${{ env.DOCKER_IMAGEM_API }}:${{ github.sha }} --file Dockerfile.api .
+        docker push ${{ env.REGISTRY_NAME }}/${{ env.DOCKER_IMAGEM_API }}:${{ github.sha }}
+        
+  publish_webapp-api:
+    if: success()
+    needs: [build_and_push]
+    runs-on: ubuntu-latest
+    steps:
     - name: Azure WebApp
       uses: Azure/webapps-deploy@v3.0.0
       with:
@@ -93,4 +99,17 @@ jobs:
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
         # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
         images: ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }}
-      
+        
+  publish_webapp-blog:
+    if: success()
+    needs: [build_and_push]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Azure WebApp
+      uses: Azure/webapps-deploy@v3.0.0
+      with:
+        # Name of the Azure Web App
+        app-name: techchalleng2dev-blog
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_BLOG }}
+        # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
+        images: ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }}
