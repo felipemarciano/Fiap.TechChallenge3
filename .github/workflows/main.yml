@@ -85,5 +85,13 @@ jobs:
         docker build -t ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }} --file Dockerfile.api .
         docker push ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }}
 
-                    
+    - name: Azure WebApp
+      uses: Azure/webapps-deploy@v3.0.0
+      with:
+        # Name of the Azure Web App
+        app-name: techchalleng2dev-api
+        # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
+        images: ${{ env.REGISTRY_NAME }}/${{ env.API_SERVICE }}:${{ github.sha }}
+        # Enter the resource group name of the web app
+        resource-group-name: ${{ env.RESOURCE_GROUP }}
 
